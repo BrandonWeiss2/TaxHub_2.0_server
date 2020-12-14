@@ -1,2 +1,2 @@
-DROP TABLE IF EXISTS state_extensions;
-DROP TABLE IF EXISTS state_tax_returns;
+DROP TABLE IF EXISTS extensions;
+DROP TABLE IF EXISTS tax_returns;

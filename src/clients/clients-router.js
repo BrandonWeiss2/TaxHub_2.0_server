@@ -16,29 +16,32 @@ clientsRouter
         res.status(200).json(clients.map(ClientService.SerializeClients))
       })
   })
-//   .post(jsonBodyParser, (req, res, next) => {
-//     const { company_name, entity_type, year_end } = req.body
-//     const newClient = { company_name, entity_type, year_end }
+  .post(jsonBodyParser, (req, res, next) => {
+    const { client_name, entity_type, year_end, client_status } = req.body
+    const newClient = { client_name, entity_type, year_end, client_status }
   
-//     for (const [key, value] of Object.entries(newClient))
-//       if (value == null)
-//         return res.status(400).json({
-//           error: `Missing '${key}' in request body`
-//         })
-
-//     newClient.user_id = req.user.id
+    for (const [key, value] of Object.entries(newClient))
+      if (value == null)
+        return res.status(400).json({
+          error: `Missing '${key}' in request body`
+        })
   
-//     ClientService.insertClient(
-//       req.app.get('db'),
-//       newClient
-//     )
-//       .then(client => {
-//         res
-//           .status(201)
-//           .json(ClientService.SerializeClients(client))
-//       })
-//       .catch(next)
-//   })
+    ClientService.insertClient(
+      req.app.get('db'),
+      newClient
+    )
+      .then(client => {
+        let newUserToClient = {user_id: req.user.id, client_id: client.client_id}
+        ClientService.insertUserToClients(
+          req.app.get('db'), 
+          newUserToClient
+        )
+        res
+          .status(201)
+          .json(ClientService.serializeClients(client))
+      })
+      .catch(next)
+  })
 
 // clientsRouter
 //   .route('/clients/:id')

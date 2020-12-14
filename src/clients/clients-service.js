@@ -8,23 +8,33 @@ const ClientService = {
       .rightJoin('clients','users_to_clients.client_id', 'clients.client_id')
       .where('user_id', user.user_id)
   },
-  // insertClient(db, newClient) {
-  //   return db
-  //     .insert(newClient)
-  //     .into('clients')
-  //     .returning('*')
-  //     .then(rows => rows[0])
-  // },
+  insertClient(db, newClient) {
+    return db
+      .insert(newClient)
+      .into('clients')
+      .returning('*')
+      .then(rows => rows[0])
+  },
+  insertUserToClients(db, data) {
+    return db
+      .insert(data)
+      .into('users_to_clients')
+      .returning('*')
+      .then(rows => rows[0])
+  },
   // deleteClient(db, id) {
   //   return db
   //     .from('clients')
   //     .where('id', id)
   //     .delete()
   // },
-  SerializeClients(client) {
+  serializeClients(client) {
     return {
       clientId: client.client_id,
       clientName: client.client_name,
+      entityType: client.entity_type,
+      yearEnd: client.year_end,
+      status: client.client_status
     }
   }
 }

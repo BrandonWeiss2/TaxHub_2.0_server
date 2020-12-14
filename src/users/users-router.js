@@ -34,12 +34,12 @@ usersRouter
         return UsersService.hashPassword(user_password)
           .then(hashedPassword => {
             const newUser = {
-              office_id: 1,
+              // office_id: 1,
               first_name,
               last_name,
               username,
               user_password: hashedPassword,
-              access_level: 1,
+              // access_level: 1,
             }
 
             return UsersService.insertUser(
