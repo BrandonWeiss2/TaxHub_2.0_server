@@ -1,6 +1,6 @@
 CREATE TYPE engagement_types AS ENUM (
   'extensions',
-  'tax returns'
+  'tax_returns'
 );
 
 CREATE TYPE status_types AS ENUM (
@@ -8,6 +8,7 @@ CREATE TYPE status_types AS ENUM (
   'started',
   'review',
   'revision',
+  'active',
   'FINAL'
 );
 

@@ -20,6 +20,7 @@ entitiesRouter
   .post(jsonBodyParser, (req, res, next) => {
     const { client_id, legal_name, ein, filer, entity_type, active } = req.body
     const newEntity = { client_id, legal_name, ein, filer, entity_type, active }
+    console.log(newEntity)
   
     for (const [key, value] of Object.entries(newEntity))
       if (value == null)

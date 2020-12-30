@@ -1,7 +1,19 @@
 const xss = require('xss')
 
 const ClientService = {
-  getAllClients(db, user) {
+  getAllClients(db) {
+    return db
+      .select('*')
+      .from('clients')
+  },
+  getClientsByClientId(db, id) {
+    return db
+      .select('*')
+      .from('clients')
+      .where('client_id', id)
+      .then(rows => rows[0])
+  },
+  getClientsByUser(db, user) {
     return db
       .select('*')
       .from('users_to_clients')
@@ -22,6 +34,13 @@ const ClientService = {
       .returning('*')
       .then(rows => rows[0])
   },
+  updateClientContact(db, updateClientContact, id) {
+    return db('clients')
+    .where('client_id', id)
+    .update(updateClientContact)
+    .returning('*')
+    .then(rows => rows[0])
+  },
   // deleteClient(db, id) {
   //   return db
   //     .from('clients')
@@ -34,7 +53,11 @@ const ClientService = {
       clientName: client.client_name,
       entityType: client.entity_type,
       yearEnd: client.year_end,
-      status: client.client_status
+      status: client.client_status,
+      contactFirstName: client.contact_first_name,
+      contactLastName: client.contact_last_name,
+      contactPhoneNumber: client.contact_phone_number,
+      contactEmail: client.contact_email
     }
   }
 }

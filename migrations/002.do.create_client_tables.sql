@@ -11,7 +11,7 @@ CREATE TABLE clients (
   -- office_id INTEGER REFERENCES offices(office_id) NOT NULL,
   client_name VARCHAR(50) NOT NULL,
   entity_type entity_types NOT NULL,
-  year_end VARCHAR(5) NOT NULL,
+  year_end DATE NOT NULL,
   client_status BOOLEAN NOT NULL,
   contact_first_name VARCHAR(30),
   contact_last_name VARCHAR(30),
