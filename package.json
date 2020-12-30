@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --require test/setup.js",
-    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "predeploy": "npm audit",
-    "deploy": "git push heroku master",
     "migrate": "postgrator --config postgrator-config.js",
-    "migrate:test": "env NODE_ENV=test npm run migrate"
+    "migrate:production": "heroku run npm run migrate",
+    "start": "node src/server.js",
+    "predeploy": "npm audit",
+    "deploy": "git push heroku master"
   },
   "keywords": [],
   "engines": {
