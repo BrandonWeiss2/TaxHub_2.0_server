@@ -10,11 +10,66 @@ engagementsRouter
   .route('/engagements/:clientId')
   // .all(requireAuth)
   .get((req, res, next) => {
-    EngagementsService.getCompleteEngagementData(req.app.get('db'), req.params.clientId)
+    // EngagementsService.getCompleteEngagementData(req.app.get('db'), req.params.clientId)
+    //   .then(engagements => {
+    //     res.status(200).json(engagements)
+    //   })
+    EngagementsService.getEngagementsByClientId(req.app.get('db'), req.params.clientId)
       .then(engagements => {
-        res.status(200).json(engagements)
+        let engagementList = engagements.map(engagement => {
+          return EngagementsService.serializeEngagement(engagement)
+        })
+        res.status(200).json(engagementList)
       })
     })
+
+engagementsRouter
+  .route('/engagements/:clientId/:engagementId/entities/:engagementType')
+  // .all(requireAuth)
+  .get((req, res, next) => {
+    EngagementsService.getEntitiesByEngagement(req.app.get('db'), req.params.clientId, req.params.engagementId, req.params.engagementType)
+      .then(entityList => {
+        res.status(200).json(entityList)
+      })
+    })
+
+engagementsRouter
+  .route('/engagements/:clientId/:engagementId/entities/:entityId/engagementType/:engagementType')
+  // .all(requireAuth)
+  .get((req, res, next) => {
+    EngagementsService.getAllEntityForms(req.app.get('db'), req.params.engagementId, req.params.entityId, req.params.engagementType)
+      .then(forms => {
+        let formList = forms.map(form => {
+          return EngagementsService.serializeEntityForms(form, req.params.engagementType)
+        })
+        console.log('formList', formList)
+        res.status(200).json(formList)
+      })
+    })
+
+engagementsRouter
+  .route('/engagements/extensions/:extensionId')
+  // .all(requireAuth)
+  .get((req, res, next) => {
+    EngagementsService.getExtensionById(req.app.get('db'), req.params.extensionId)
+      .then(extension => {
+        res.status(200).json(extension)
+      })
+    })
+
+engagementsRouter
+  .route('/engagements/taxReturns/:taxReturnId')
+  // .all(requireAuth)
+  .get((req, res, next) => {
+    EngagementsService.getTaxReturnById(req.app.get('db'), req.params.taxReturnId)
+      .then(taxReturn => {
+        res.status(200).json(taxReturn)
+      })
+    })
+
+engagementsRouter
+  .route('/engagements/:clientId/engagement')
+  // .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
     const { filing_year_id, engagement_type, engagement_status } = req.body
     let engagement = {filing_year_id, engagement_type, engagement_status}

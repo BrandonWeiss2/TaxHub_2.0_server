@@ -1,32 +1,15 @@
 const xss = require('xss')
 
 const EngagementsService = {
-  // returns every engagement, the clients related entities and the forms (returns and extensions) associated with those entities. This will join together the engagements table and filing_years tables just to get a basic listing with no additional details
-  async getCompleteEngagementData(db, clientId) {
-    let engagementList = await this.getEngagementsByClientId(db, clientId)
-    console.log('engagementList', engagementList)
-    // the array containing the engagements is mapped over
-    return await Promise.all(engagementList.map(async engagement => {
-      let totalForms = await this.getNumberOfForms(db, engagement.engagement_id, engagement.engagement_type)
-      let formsFinalized = await this.getNumberOfFormsFinalized(db, engagement.engagement_id, engagement.engagement_type)
-      let entities = await this.getAllEntities(db, clientId)
-      // the array containing the entities is mapped over while still in the map for the engagements
-      entities = await Promise.all(entities.map( async entity => {
-        // every form (tax return or extension) is combined into an array for each entity
-        let entityForms = await this.getAllEntityForms(db, entity.entity_id, engagement.engagement_type, engagement.engagement_id)
-        let entityTotalForms = 0
-        let entityFormsFinalized = 0
-        entityForms.forEach(form => {
-          entityTotalForms ++
-          if (form.completion_status === 'FINAL') {
-            entityFormsFinalized++
-          }
-        })
-        return await this.serializeEntityForms(entity, entityForms, entityTotalForms, entityFormsFinalized, engagement.engagement_type)
-      }))
-      // all the engagments are serialized, and the entities array we previously mapped is combined. This exits the engagement list map and returns the final array of all our data
-      return await this.serializeEngagements(engagement, totalForms[0].count, formsFinalized[0].count, entities)
-    }))
+  async getEntitiesByEngagement(db, clientId, engagementId, engagementType) {
+    let entities = await this.getAllEntities(db, clientId)
+    let totalForms = await this.getNumberOfForms(db, engagementId, engagementType)
+    let formsFinalized = await this.getNumberOfFormsFinalized(db, engagementId, engagementType)
+    return {
+      entities,
+      totalForms,
+      formsFinalized
+    }
   },
   updateEngagmentStatus(db, engagementId, engagementStatus) {
     return db('engagements')
@@ -42,7 +25,7 @@ const EngagementsService = {
       .from('entities')
       .where('client_id', clientId)
   },
-  getAllEntityForms(db, entityId, engagementType, engagementId) {
+  getAllEntityForms(db, engagementId, entityId, engagementType) {
     return db
       .select('*')
       .from('entities')
@@ -74,6 +57,20 @@ const EngagementsService = {
       .rightJoin(`${engagementType}`, `engagements.engagement_id`, `${engagementType}.engagement_id`)
       .where('engagements.engagement_id', engagementId)
       .where(`${engagementType}.completion_status`, 'FINAL') 
+  },
+  getExtensionById(db, extensionId) {
+    return db
+      .select('*')
+      .from('extensions')
+      .where('extension_id', extensionId)
+      .then(rows => rows[0])
+  },
+  getTaxReturnById(db, taxReturnId) {
+    return db
+      .select('*')
+      .from('tax_returns')
+      .where('tax_return_id', taxReturnId)
+      .then(rows => rows[0])
   },
   insertNewExtension(db, extension) {
     return db
@@ -183,7 +180,7 @@ const EngagementsService = {
       completionStatus: taxReturn.completion_status,
     }
   },
-  serializeEngagements(engagement, totalForms, formsFinalized, entities) {
+  serializeEngagement(engagement) {
     return {
       clientId: engagement.client_id,
       engagementId: engagement.engagement_id,
@@ -192,48 +189,43 @@ const EngagementsService = {
       engagementStatus: engagement.engagement_status,
       filingYear: engagement.filing_year,
       yearEnd: engagement.year_end,
-      totalForms: totalForms,
-      formsFinalized,
-      entities,
     }
   },
-  serializeEntityForms(entity, entityForms, totalForms, formsFinalized, engagementType) {
-    if(engagementType === 'extensions') {
-      entityForms = entityForms.map(form => {
-        return ({
-          extensionId: form.extension_id,
-          entityId: form.entity_id,
-          jurisdictionId: form.jurisdiction_id,
-          formName: form.form_name,
-          dueDate: form.due_date,
-          completionStatus: form.completion_status,
-        })
-      })
-    } else if (engagementType === 'tax_returns') {
-      entityForms = entityForms.map(form => {
-        return ({
-          taxReturnId: form.tax_return_id,
-          entityId: form.entity_id,
-          jurisdictionId: form.jurisdiction_id,
-          formName: form.form_name,
-          extended: form.extended,
-          dueDate: form.due_date,
-          extendedDueDate: form.extended_due_date,
-          completionStatus: form.completion_status,
-        })
-      })
-    }
-    return ({
+  serializeEntity(entity) {
+    return {
       entityId: entity.entity_id,
+      clientId: entity.client_id,
       entityName: entity.legal_name,
-      clientId: entity.clientId,
       ein: entity.ein,
       filer: entity.filer,
+      entityType: entity.entity_type,
       active: entity.active,
-      totalForms: totalForms,
-      formsFinalized: formsFinalized,
-      entityForms: entityForms
-    })
+    }
+  },
+  serializeEntityForms(form, engagementType) {
+    if(engagementType === 'extensions') {
+      return ({
+        extensionId: form.extension_id,
+        engagementI: form.engagement_id,
+        entityId: form.entity_id,
+        jurisdictionId: form.jurisdiction_id,
+        formName: form.form_name,
+        dueDate: form.due_date,
+        completionStatus: form.completion_status,
+      })
+    } else if (engagementType === 'tax_returns') {
+      return ({
+        taxReturnId: form.tax_return_id,
+        engagementI: form.engagement_id,
+        entityId: form.entity_id,
+        jurisdictionId: form.jurisdiction_id,
+        formName: form.form_name,
+        extended: form.extended,
+        dueDate: form.due_date,
+        extendedDueDate: form.extended_due_date,
+        completionStatus: form.completion_status,
+      })
+    }
   },
   serializeEngagementEntityForms(engagementType, form) {
     if(engagementType === 'extensions') {
