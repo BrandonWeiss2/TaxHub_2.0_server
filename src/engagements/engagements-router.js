@@ -2,18 +2,13 @@ const express = require('express')
 const path = require('path')
 const EngagementsService = require('./engagements-service')
 const { requireAuth } = require('../middleware/jwt-auth')
-
 const engagementsRouter = express.Router()
 const jsonBodyParser = express.json()
 
 engagementsRouter
   .route('/engagements/:clientId')
-  // .all(requireAuth)
+  .all(requireAuth)
   .get((req, res, next) => {
-    // EngagementsService.getCompleteEngagementData(req.app.get('db'), req.params.clientId)
-    //   .then(engagements => {
-    //     res.status(200).json(engagements)
-    //   })
     EngagementsService.getEngagementsByClientId(req.app.get('db'), req.params.clientId)
       .then(engagements => {
         let engagementList = engagements.map(engagement => {
@@ -25,7 +20,7 @@ engagementsRouter
 
 engagementsRouter
   .route('/engagements/:clientId/:engagementId/entities/:engagementType')
-  // .all(requireAuth)
+  .all(requireAuth)
   .get((req, res, next) => {
     EngagementsService.getEntitiesByEngagement(req.app.get('db'), req.params.clientId, req.params.engagementId, req.params.engagementType)
       .then(entityList => {
@@ -35,21 +30,20 @@ engagementsRouter
 
 engagementsRouter
   .route('/engagements/:clientId/:engagementId/entities/:entityId/engagementType/:engagementType')
-  // .all(requireAuth)
+  .all(requireAuth)
   .get((req, res, next) => {
     EngagementsService.getAllEntityForms(req.app.get('db'), req.params.engagementId, req.params.entityId, req.params.engagementType)
       .then(forms => {
         let formList = forms.map(form => {
           return EngagementsService.serializeEntityForms(form, req.params.engagementType)
         })
-        console.log('formList', formList)
         res.status(200).json(formList)
       })
     })
 
 engagementsRouter
   .route('/engagements/extensions/:extensionId')
-  // .all(requireAuth)
+  .all(requireAuth)
   .get((req, res, next) => {
     EngagementsService.getExtensionById(req.app.get('db'), req.params.extensionId)
       .then(extension => {
@@ -59,7 +53,7 @@ engagementsRouter
 
 engagementsRouter
   .route('/engagements/taxReturns/:taxReturnId')
-  // .all(requireAuth)
+  .all(requireAuth)
   .get((req, res, next) => {
     EngagementsService.getTaxReturnById(req.app.get('db'), req.params.taxReturnId)
       .then(taxReturn => {
@@ -69,11 +63,10 @@ engagementsRouter
 
 engagementsRouter
   .route('/engagements/:clientId/engagement')
-  // .all(requireAuth)
+  .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
     const { filing_year_id, engagement_type, engagement_status } = req.body
     let engagement = {filing_year_id, engagement_type, engagement_status}
-    console.log('filingYear' ,  engagement)
     EngagementsService.insertEngagement(req.app.get('db'), engagement)
       .then(engagment => {
         res.status(200).json(engagment)
@@ -82,10 +75,9 @@ engagementsRouter
 
 engagementsRouter
   .route('/engagements/status')
-  // .all(requireAuth)
+  .all(requireAuth)
   .patch(jsonBodyParser, (req, res, next) => {
     const { engagement_id, engagement_status } = req.body
-    console.log('status' ,  engagement_id, engagement_status)
     EngagementsService.updateEngagmentStatus(req.app.get('db'), engagement_id, engagement_status)
       .then(engagementStatus => {
         res.status(200).json(engagementStatus)
@@ -94,7 +86,7 @@ engagementsRouter
 
 engagementsRouter
   .route('/engagements/extensions')
-  // .all(requireAuth)
+  .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
     const { engagement_id, entity_id, jurisdiction_id, form_name, due_date, completion_status } = req.body
     let newExtension = { engagement_id, entity_id, jurisdiction_id, form_name, due_date, completion_status }
@@ -122,7 +114,7 @@ engagementsRouter
 
 engagementsRouter
   .route('/engagements/tax_returns')
-  // .all(requireAuth)
+  .all(requireAuth)
   .post(jsonBodyParser, (req, res, next) => {
     const { engagement_id, entity_id, jurisdiction_id, form_name, extended, due_date, extended_due_date, completion_status } = req.body
     let newTaxReturn = { engagement_id, entity_id, jurisdiction_id, form_name, extended, due_date, extended_due_date, completion_status }
@@ -147,9 +139,9 @@ engagementsRouter
         })
       })
     
-  engagementsRouter
+engagementsRouter
   .route('/engagements/:engagementType/:engagementId/:entityId')
-  // .all(requireAuth)
+  .all(requireAuth)
   .get((req, res, next) => {
     EngagementsService.getAllEntityForms(req.app.get('db'), req.params.entityId, req.params.engagementType, req.params.engagementId)
       .then(forms => {
@@ -162,27 +154,42 @@ engagementsRouter
       })
     })
 
-    engagementsRouter
-    .route('/engagements/filingYears/:clientId')
-    // .all(requireAuth)
-    .get((req, res, next) => {
-      EngagementsService.getAllFilingYearsByClient(req.app.get('db'), req.params.clientId)
-        .then(filingYears => {
-          let clientFilingYears = filingYears.map(filingYear => {
-            return(
-              EngagementsService.serializeFilingYear(filingYear)
-            )
-          })
-          res.status(200).json(clientFilingYears)
+engagementsRouter
+  .route('/engagements/filingYears/:clientId')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    EngagementsService.getAllFilingYearsByClient(req.app.get('db'), req.params.clientId)
+      .then(filingYears => {
+        let clientFilingYears = filingYears.map(filingYear => {
+          return(
+            EngagementsService.serializeFilingYear(filingYear)
+          )
         })
+        res.status(200).json(clientFilingYears)
       })
-    .post(jsonBodyParser, (req, res, next) => {
-      const { client_id, filing_year, year_end } = req.body
-      console.log('create filing year', client_id, filing_year, year_end)
-      let newFilingYear = { client_id, filing_year, year_end }
-      EngagementsService.insertNewFilingYear(req.app.get('db'), newFilingYear)
-        .then(filingYear => {
-          res.status(200).json(filingYear)
+    })
+  .post(jsonBodyParser, (req, res, next) => {
+    const { client_id, filing_year, year_end } = req.body
+    let newFilingYear = { client_id, filing_year, year_end }
+    EngagementsService.insertNewFilingYear(req.app.get('db'), newFilingYear)
+      .then(filingYear => {
+        res.status(200).json(filingYear)
+      })
+    })
+
+engagementsRouter
+  .route('/engagements/active/:clientId')
+  .all(requireAuth)
+  .get((req, res, next) => {
+    EngagementsService.getAllEntityForms(req.app.get('db'), req.params.clientId)
+      .then(forms => {
+        let entityforms = forms.map(form => {
+          return(
+            EngagementsService.serializeEngagementEntityForms(req.params.engagementType, form)
+          )
         })
+        res.status(200).json(entityforms)
       })
-  module.exports = engagementsRouter
+    }) 
+      
+module.exports = engagementsRouter

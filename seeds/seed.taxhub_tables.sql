@@ -5,7 +5,7 @@ BEGIN;
 TRUNCATE
   extensions,
   tax_returns,
-  parent_to_sub,
+  -- parent_to_sub,
   entities,
   engagements,
   filing_years,
@@ -79,18 +79,18 @@ VALUES
   ('5', '1', 'We Were Sold Inc.', '63-1236123', 'false', 'LLC', 'false'),
   ('6', '2', 'Big Steal Corp.', '13-1126230', 'true', 'C-Corp', 'true');
 
-INSERT INTO parent_to_sub (parent_to_sub_id, filing_year_id, parent_id, sub_id)
-VALUES
-  ('1', '1', '1', '1'),
-  ('2', '1', '1', '2'),
-  ('3', '1', '1', '3'),
-  ('4', '1', '2', '4'),
-  ('5', '1', '2', '5'),
-  ('6', '2', '1', '1'),
-  ('7', '2', '1', '2'),
-  ('8', '2', '1', '3'),
-  ('9', '2', '2', '4'),
-  ('10', '3', '6', '6');
+-- INSERT INTO parent_to_sub (parent_to_sub_id, filing_year_id, parent_id, sub_id)
+-- VALUES
+--   ('1', '1', '1', '1'),
+--   ('2', '1', '1', '2'),
+--   ('3', '1', '1', '3'),
+--   ('4', '1', '2', '4'),
+--   ('5', '1', '2', '5'),
+--   ('6', '2', '1', '1'),
+--   ('7', '2', '1', '2'),
+--   ('8', '2', '1', '3'),
+--   ('9', '2', '2', '4'),
+--   ('10', '3', '6', '6');
 
 INSERT INTO extensions (extension_id, engagement_id, entity_id, jurisdiction_id, form_name, due_date, completion_status)
 VALUES

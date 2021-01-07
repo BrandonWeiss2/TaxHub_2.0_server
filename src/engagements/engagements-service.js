@@ -24,6 +24,7 @@ const EngagementsService = {
       .select('*')
       .from('entities')
       .where('client_id', clientId)
+      .where('active', true)
   },
   getAllEntityForms(db, engagementId, entityId, engagementType) {
     return db
@@ -72,6 +73,12 @@ const EngagementsService = {
       .where('tax_return_id', taxReturnId)
       .then(rows => rows[0])
   },
+  // getActiveEngagements(db, clientId) {
+  //   return db
+  //     .select('*')
+  //     .from('tax_returns')
+  //     .where('tax_return_id', taxReturnId)
+  // },
   insertNewExtension(db, extension) {
     return db
       .insert(extension)
