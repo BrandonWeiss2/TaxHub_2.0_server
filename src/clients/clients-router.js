@@ -6,6 +6,10 @@ const { requireAuth } = require('../middleware/jwt-auth')
 const clientsRouter = express.Router()
 const jsonBodyParser = express.json()
 
+function isCorrectDateFormat (dateString, format) {
+  return (dateString, format, true).isValid()
+}
+
 clientsRouter
   .route('/clients')
   .all(requireAuth)
@@ -24,14 +28,15 @@ clientsRouter
     const { client_name, entity_type, year_end, client_status } = req.body
     const newClient = { client_name, entity_type, year_end, client_status }
     const userId = req.user.user_id
-    console.log('user ID', userId)
-  
-    for (const [key, value] of Object.entries(newClient))
-      if (value == null)
-        return res.status(400).json({
-          error: `Missing '${key}' in request body`
-        })
-  
+
+    if (!client_name || typeof client_name !== 'string') {
+      return res.status(400).json({ error: 'Invalid client name' });
+    }
+
+    if (!year_end || !isCorrectDateFormat(year_end, 'YYYY-MM-DD')) {
+      return res.status(400).json({ error: 'Invalid year-end' });
+    }
+
     ClientService.insertClient(
       req.app.get('db'),
       newClient

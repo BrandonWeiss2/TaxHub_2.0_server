@@ -13,11 +13,11 @@ entitiesRouter
   .post(jsonBodyParser, (req, res, next) => {
     const { client_id, legal_name, ein, filer, entity_type, active } = req.body
     const newEntity = { client_id, legal_name, ein, filer, entity_type, active }  
-    for (const [key, value] of Object.entries(newEntity))
-      if (value == null)
-        return res.status(400).json({
-          error: `Missing '${key}' in request body`
-        })
+    // for (const [key, value] of Object.entries(newEntity))
+    //   if (value == null)
+    //     return res.status(400).json({
+    //       error: `Missing '${key}' in request body`
+    //     })
     EntitiesService.insertEntity(
       req.app.get('db'),
       newEntity
